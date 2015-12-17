@@ -24,7 +24,7 @@ class ContactsController extends AppController {
 
     public function beforeFilter(Event $event) {
         parent::beforeFilter($event);
-        $this->Auth->allow();
+        $this->Auth->allow(['add', 'addAjax']);
     }
 
     /**
@@ -32,7 +32,8 @@ class ContactsController extends AppController {
      *
      * @return void
      */
-    public function index() {
+    public function admin() {
+        $this->viewBuilder()->layout('admin');
         $this->set('contacts', $this->paginate($this->Contacts));
         $this->set('_serialize', ['contacts']);
     }
@@ -45,6 +46,7 @@ class ContactsController extends AppController {
      * @throws \Cake\Network\Exception\NotFoundException When record not found.
      */
     public function view($id = null) {
+        $this->viewBuilder()->layout('admin');
         $contact = $this->Contacts->get($id, [
             'contain' => []
         ]);
@@ -134,7 +136,7 @@ class ContactsController extends AppController {
         } else {
             $this->Flash->error(__('The contact could not be deleted. Please, try again.'));
         }
-        return $this->redirect(['action' => 'index']);
+        return $this->redirect(['action' => 'admin']);
     }
 
 }
