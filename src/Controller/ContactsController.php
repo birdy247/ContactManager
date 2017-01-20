@@ -24,7 +24,7 @@ class ContactsController extends AppController {
 
     public function beforeFilter(Event $event) {
         parent::beforeFilter($event);
-        $this->Auth->allow(['add', 'addAjax']);
+        $this->Auth->deny(['admin', 'edit', 'delete', 'view']);
     }
 
     /**
@@ -62,12 +62,16 @@ class ContactsController extends AppController {
     public function add() {
         $contact = $this->Contacts->newEntity();
         if ($this->request->is('post')) {
-            $contact = $this->Contacts->patchEntity($contact, $this->request->data);
-            if ($this->Contacts->save($contact)) {
-                $this->Flash->success(__('The contact has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            } else {
-                $this->Flash->error(__('The contact could not be saved. Please, try again.'));
+            if ($this->Recaptcha->verify()) {
+                $contact = $this->Contacts->patchEntity($contact, $this->request->data);
+                if ($this->Contacts->save($contact)) {
+                    $this->Flash->success(__('Your message has been sent.  We will reply as soon as possible.'));
+                    return $this->redirect($this->referer());
+                } else {
+                    $this->Flash->error(__('Your message could not be sent.  Please try again or email hello@xncreations.com'));
+                }
+            }else{
+                $this->Flash->error(__('Invalid Recaptcha. Please, try again.'));
             }
         }
 
